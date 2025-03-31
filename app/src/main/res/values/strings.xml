@@ -1,0 +1,7 @@
+<resources>
+    <string name="app_name">Progetto_Android_Spotify</string>
+    <string name="Username">Username / email</string>
+    <string name="Password">Password</string>
+    <string name="SignIn">Sign In</string>
+    <string name="SignUp">Sign Up</string>
+</resources>
