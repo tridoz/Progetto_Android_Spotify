@@ -15,6 +15,7 @@ public class TCPConnection extends Thread{
     private String error_message;
 
     private Map<String, String> additional_request_fields;
+    private Map<String, String> songs_path;
 
     private Socket socket;
 
@@ -39,6 +40,8 @@ public class TCPConnection extends Thread{
         additional_request_fields.put("Arist name", "");
         additional_request_fields.put("User name", "");
         additional_request_fields.put("Song name", "");
+
+        this.songs_path = new HashMap<String, String>();
     }
 
     public void set_for(int job){
@@ -90,16 +93,27 @@ public class TCPConnection extends Thread{
                     break;
 
                 case SharedData.PLAYLIST_CONTENT_REQUEST:
+                    this.songs_path.clear();
                     String playlist_name = this.additional_request_fields.getOrDefault("Playlist name", null);
                     if( playlist_name == null){
                         this.error_message = "The name of the playlist was not set in the Addition_Fields. Setting it as a empty string";
                         this.additional_request_fields.replace("Playlist name", "");
                         break;
                     }
-                    String playlist_content_request_message  ="request_code:"+SharedData.PLAYLIST_CONTENT_REQUEST+";username:"+SharedData.USERNAME+";access_token:"+SharedData.ACCESS_TOKEN+";playlist_name:"+playlist_name;
+                    String playlist_content_request_message  ="request_code:"+SharedData.PLAYLIST_CONTENT_REQUEST+";username:"+SharedData.USERNAME+";access_token:"+SharedData.ACCESS_TOKEN+";playlist_name:"+playlist_name+"\n";
+                    if( send(playlist_name) == SharedData.SEND_MESSAGE_ERROR_CODE  ){
+                        this.running = false;
+                    }
                     break;
 
                 case SharedData.SONGS_DATA_REQUEST:
+                    for( String key: this.songs_path.keySet() ){
+                       String song_path = this.songs_path.get(key);
+                       String song_data_request_message = "request_code:"+SharedData.SONGS_DATA_REQUEST+";username:"+SharedData.USERNAME+";access_token:"+SharedData.ACCESS_TOKEN+";song_path:"+song_path+"\n";
+                       if( send(song_data_request_message) == SharedData.SEND_MESSAGE_ERROR_CODE ){
+                           this.running = false;
+                       }
+                    }
                     break;
 
                 case SharedData.SONG_SEARCH_REQUEST:
@@ -109,15 +123,52 @@ public class TCPConnection extends Thread{
                         this.additional_request_fields.replace("Song name", "");
                         break;
                     }
+                    String song_search_request_message = "request_code"+SharedData.SONG_SEARCH_REQUEST+";username:"+SharedData.USERNAME+";access_token:"+SharedData.ACCESS_TOKEN+";song_name:"+song_name+"\n";
+                    if( send(song_search_request_message) == SharedData.SEND_MESSAGE_ERROR_CODE ){
+                        this.running = false;
+                    }
                     break;
 
                 case SharedData.PLAYLIST_SEARCH_REQUEST:
+                    String playlist_search_name = this.additional_request_fields.getOrDefault("Playlist name", null);
+                    if( playlist_search_name == null){
+                        this.error_message = "The name of the playlist was not set in the Additional_Fields. Setting it as an empty string";
+                        this.additional_request_fields.replace("Playlist name", "");
+                        break;
+                    }
+
+                    String playlist_search_request_message = "request_code:"+SharedData.PLAYLIST_SEARCH_REQUEST+";username:"+SharedData.USERNAME+";access_token"+SharedData.ACCESS_TOKEN+";playlist_name"+playlist_search_name+"\n";
+                    if( send(playlist_search_request_message) == SharedData.SEND_MESSAGE_ERROR_CODE ){
+                        this.running = false;
+                    }
                     break;
 
                 case SharedData.ARTIST_SEARCH_REQUEST:
+                    String artist_name = this.additional_request_fields.getOrDefault("Artist name", null);
+                    if( artist_name == null){
+                        this.error_message = "The name of the artist was not set in the Additional_Fields. Setting in as an empty string";
+                        this.additional_request_fields.replace("Playlist name", "");
+                        break;
+                    }
+
+                    String artist_search_request_message = "request_code:"+SharedData.ARTIST_SEARCH_REQUEST+";username:"+SharedData.USERNAME+";access_token:"+SharedData.ACCESS_TOKEN+";artist_name:"+artist_name+"\n";
+                    if( send(artist_search_request_message) == SharedData.SEND_MESSAGE_ERROR_CODE ){
+                        this.running = false;
+                    }
                     break;
 
                 case SharedData.USER_SEARCH_REQUEST:
+                    String user_name = this.additional_request_fields.getOrDefault("User name", null);
+                    if( user_name == null ){
+                        this.error_message = "The user name was not set in the Additional_Fields. Setting it as an empty string";
+                        this.additional_request_fields.replace("User name", "");
+                        break;
+                    }
+
+                    String user_search_request_message = "request_code:"+SharedData.USER_SEARCH_REQUEST+";username:"+SharedData.USERNAME+";access_token:"+SharedData.ACCESS_TOKEN+";user_name"+user_name+"\n";
+                    if( send(user_search_request_message) == SharedData.SEND_MESSAGE_ERROR_CODE ){
+                        this.running = false;
+                    }
                     break;
 
                 case SharedData.SONG_IN_PLAYLIST_SEARCH_REQUEST:
