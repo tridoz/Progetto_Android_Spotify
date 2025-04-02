@@ -102,7 +102,7 @@ public class MainActivity extends AppCompatActivity {
                         break;
 
                     case 500:
-                        Toast.makeText(view.getContext(), "Errore del server, riprova più tardi", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(view.getContext(), "Errore del server, riprova più tardi", Toast.LENGTH_LONG).show();
                         break;
 
                 }

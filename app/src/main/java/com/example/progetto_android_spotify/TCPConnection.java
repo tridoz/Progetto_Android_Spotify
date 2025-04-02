@@ -47,14 +47,14 @@ public class TCPConnection extends Thread{
         additional_request_fields.put("Song name", "");
 
         this.response_fields = new HashMap<String, String>();
-        this.response_fields.put("response_code", "");
-        this.response_fields.put("access_token", "");
-        this.response_fields.put("refresh_token", "");
-        this.response_fields.put("revoke_token", "");
-        this.response_fields.put("songs", "");
-        this.response_fields.put("playlists", "");
-        this.response_fields.put("artists", "");
-        this.response_fields.put("users", "");
+        this.response_fields.put("response_code", "0");
+        this.response_fields.put("access_token", "0");
+        this.response_fields.put("refresh_token", "0");
+        this.response_fields.put("revoke_token", "0");
+        this.response_fields.put("songs", "0");
+        this.response_fields.put("playlists", "0");
+        this.response_fields.put("artists", "0");
+        this.response_fields.put("users", "0");
 
 
     }
@@ -108,39 +108,48 @@ public class TCPConnection extends Thread{
                     if( recv() == SharedData.RECEIVE_MESSAGE_ERROR_CODE ){
                         this.running = false;
                         Log.d("TCPConnection", "Receiving message error => " + this.error_message);
+                        break;
                     }
 
-                    String[] fields = SharedData.response.split(";");
+                    String[] sign_in_fields = SharedData.response.split(";");
 
-                    for( String field : fields){
-                        String[] sub_fields = field.split(":");
-                        String key = sub_fields[0];
-                        String value = sub_fields[1];
-                        this.response_fields.replace(key, value);
+                    for( String sign_in_field : sign_in_fields){
+                        Log.d("Debug Stringa", sign_in_field);
+                        String[] sub_fields = sign_in_field.split(":");
+                        Log.d("Sebug Stringa", String.valueOf(sub_fields.length));
+                        String sign_in_key = sub_fields[0];
+                        String sign_in_value = sub_fields[1];
+                        this.response_fields.replace(sign_in_key, sign_in_value);
                     }
 
-                    int response_code = Integer.parseInt(this.response_fields.get("response_code"));
-                    if( response_code == 200 ){
+                    int sign_in_response_code = Integer.parseInt(this.response_fields.get("response_code"));
+                    if( sign_in_response_code == 200 ){
                         SharedData.ACCESS_TOKEN = this.response_fields.get("access_token");
                         SharedData.REFRESH_TOKEN = this.response_fields.get("refresh_token");
                         SharedData.REVOKE_TOKEN = this.response_fields.get("revoke_token");
                         SharedData.isLoggedIn = true;
-                    }else if(response_code == 400){
+                    }else {
                         SharedData.isLoggedIn = false;
                     }
-
-
-
-
-
 
                     break;
 
                 case SharedData.SIGN_UP_REQUEST:
-                    String sign_up_request_message = "request_code:"+SharedData.SIGN_UP_REQUEST+";username:"+SharedData.USERNAME+";password:"+SharedData.PASSWORD+"\n";
-                    if( send(sign_up_request_message) == SharedData.SEND_MESSAGE_ERROR_CODE ){
+                    String sign_up_request_message = "request_code:" + SharedData.SIGN_UP_REQUEST + ";username:" + SharedData.USERNAME + ";password:" + SharedData.PASSWORD + "\n";
+                    if (send(sign_up_request_message) == SharedData.SEND_MESSAGE_ERROR_CODE) {
                         this.running = false;
                     }
+
+                    if (recv() == SharedData.RECEIVE_MESSAGE_ERROR_CODE) {
+                        this.running = false;
+                        Log.d("TCPConnection", "Receiving message error => " + this.error_message);
+                    }
+
+                    String[] sign_up_fields = SharedData.response.split(":");
+                    String sign_up_key = sign_up_fields[0];
+                    String sign_up_value = sign_up_fields[1];
+                    this.response_fields.replace(sign_up_key, sign_up_value);
+
                     break;
 
                 case SharedData.PLAYLIST_CONTENT_REQUEST:
@@ -324,6 +333,7 @@ public class TCPConnection extends Thread{
             this.error_message = "Receiving the response from the server caused an exception: " + ex.getMessage();
             return SharedData.RECEIVE_MESSAGE_ERROR_CODE;
         }
+        Log.d("TCPConnection", "Received_Message: " + response);
         SharedData.response = response;
         return SharedData.TCP_OPERATION_SUCCESSFUL;
     }
