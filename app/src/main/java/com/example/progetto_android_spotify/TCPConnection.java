@@ -172,19 +172,69 @@ public class TCPConnection extends Thread{
                     break;
 
                 case SharedData.SONG_IN_PLAYLIST_SEARCH_REQUEST:
+                    String song_playlist_name = this.additional_request_fields.getOrDefault("Song name", null);
+                    if( song_playlist_name == null){
+                        this.error_message = "The song name was not set in the Additional_Fields. Setting it as an empty string";
+                        this.additional_request_fields.replace("User name", "");
+                        break;
+                    }
+
+                    String song_playlist_search_request_message = "request:"+SharedData.SONG_IN_PLAYLIST_SEARCH_REQUEST+";username:"+SharedData.USERNAME+";access_token:"+SharedData.ACCESS_TOKEN+";song_name"+song_playlist_name+"\n";
+                    if( send(song_playlist_search_request_message) == SharedData.SEND_MESSAGE_ERROR_CODE ){
+                        this.running = false;
+                    }
                     break;
 
                 case SharedData.ADD_TO_PLAYLIST_REQUEST:
+                    String song_to_add_name = this.additional_request_fields.getOrDefault("Song name", null);
+                    String playlist_where_add_name = this.additional_request_fields.getOrDefault("Playlist name", null);
+                    if( song_to_add_name == null ){
+                        this.error_message = "The song name was not set in the Additional_Fields. Setting it as an empty string";
+                        this.additional_request_fields.replace("Song name", "");
+                        break;
+                    }
+
+                    if( playlist_where_add_name == null){
+                        this.error_message = "The playlist name was not set in the Additional_Fields. Setting it as an empty string";
+                        this.additional_request_fields.replace("Playlist name", "");
+                        break;
+                    }
+
+                    String add_song_to_playlist_request_message = "request_code:"+SharedData.ADD_TO_PLAYLIST_REQUEST+";username:"+SharedData.USERNAME+";access_token:"+SharedData.ACCESS_TOKEN+";playlist_name:"+playlist_where_add_name+";song_name"+song_to_add_name+"\n";
+                    if( send(add_song_to_playlist_request_message) == SharedData.SEND_MESSAGE_ERROR_CODE ){
+                        this.running = false;
+                    }
                     break;
 
                 case SharedData.ADD_TO_LIKED_SONGS_REQUEST:
+                    String liked_song_name = additional_request_fields.getOrDefault("Song name", null);
+                    if( liked_song_name == null ){
+                        this.error_message = "The song name was not set in the Additional_Fields. Setting it as an empty string";
+                        this.additional_request_fields.replace("Song name", "");
+                        break;
+                    }
+
+                    String add_song_to_liked_request_message = "request_code:"+SharedData.ADD_TO_LIKED_SONGS_REQUEST+";username"+SharedData.USERNAME+";access_token:"+SharedData.ACCESS_TOKEN+";song_name"+liked_song_name+"\n";
+                    if( send(add_song_to_liked_request_message) == SharedData.SEND_MESSAGE_ERROR_CODE ){
+                        this.running = false;
+                    }
+
                     break;
 
                 case SharedData.REFRESH_TOKEN_REQUEST:
+                    String refresh_token_request_message = "request_code:"+SharedData.REFRESH_TOKEN_REQUEST+";username:"+SharedData.USERNAME+";refresh_token"+SharedData.REFRESH_TOKEN+"\n";
+                    if( send(refresh_token_request_message) == SharedData.SEND_MESSAGE_ERROR_CODE ){
+                        this.running = false;
+                    }
                     break;
 
                 case SharedData.REVOKE_TOKEN_REQUEST:
+                    String revoke_token_request_message = "request_code:"+SharedData.REVOKE_TOKEN_REQUEST+";username:"+SharedData.USERNAME+";refresh_token"+SharedData.REVOKE_TOKEN+"\n";
+                    if( send(revoke_token_request_message) == SharedData.SEND_MESSAGE_ERROR_CODE ){
+                        this.running = false;
+                    }
                     break;
+
             }
         }
     }
